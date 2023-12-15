@@ -20,6 +20,16 @@
         }
 
         urlParamsFecth()
+
+        const getNum=async ()=>{
+            await  axios.get("/num",{
+                params:{
+                    num:555
+                }
+            })
+        }
+
+        getNum()
     </script>
     
 </body>

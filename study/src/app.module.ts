@@ -12,6 +12,11 @@ import { transports,format } from 'winston';
 import  * as chalk  from 'chalk';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { Permission } from './user/entities/permission.entity';
+import { BbbModule } from './bbb/bbb.module';
+import { RedisModule } from './redis/redis.module';
+import { Role } from './user/entities/role.entity';
 
 @Module({
   imports: [PersonModule, UserModule, AaaModule, 
@@ -47,13 +52,22 @@ import { User } from './user/entities/user.entity';
     database: "nestjs_typeorm",
     synchronize: true,
     logging: true,
-    entities: [User],
+    entities: [User,Permission,Role],
     poolSize: 10,
     connectorPackage: 'mysql2', 
     extra: {
         authPlugin: 'sha256_password',
     }
   }),
+  JwtModule.register({
+    global:true,
+    secret: 'iwan',
+    signOptions: {
+      expiresIn: '3m'
+    }
+  }),
+  BbbModule,
+  RedisModule
 ],
   controllers: [AppController],
   providers: [

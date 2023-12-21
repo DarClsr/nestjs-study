@@ -1,9 +1,9 @@
-import { Controller, Get, Inject, Logger, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Inject, Logger, Query, Session, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Aaa } from './aaa.decorator';
 import { AaaGuard } from './aaa.guard';
 import { AaaService } from './aaa/aaa.service';
 import { AppService } from './app.service';
-import { LoginGuard } from './login.guard';
+import { LoginGuard } from './login.guard_jwt';
 import { MyLogger } from './MyLogger';
 import { PersonService } from './person/person.service';
 import { QuerypageInterceptor } from './querypage.interceptor';
@@ -35,9 +35,27 @@ export class AppController {
     // this.userService.create({
     //   username:"iwan"
     // })
+  
     return this.appService.getHello();
   }
+  @Get("sss")
+  async getSession(@Session() session){
+    session.count = session.count ? session.count + 1 : 1;
+    console.log(session)
+    return session.count
+  }
 
+  @Get("aa")
+  @UseGuards(LoginGuard)
+  async getAad(){
+    return "aaaa"
+  }
+
+  @Get("bb")
+  @UseGuards(LoginGuard)
+  async getbbb(){
+    return "bbbb"
+  }
   @Get("profile.json")
   @UseInterceptors(QuerypageInterceptor)
   getProfile(): string {

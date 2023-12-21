@@ -103,7 +103,7 @@
   # nest g decorator aaa 
 
   自定义装饰器
-
+e
 
   # sql  
   这里简单说一下 sql 的分类，sql 是分为好几种的，这种创建数据库、创建表等修改结构的 sql 叫做 DDL（Data Definition Language），而增删改那种叫做 DML（Data Manipulate Language），查询数据的叫做 DQL（Data Query Language）

@@ -44,7 +44,7 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_LOGGER_TOKEN));
 
   app.setGlobalPrefix('')
-  await app.listen(3000);
-  console.log(`server start success http://localhost:${3000}`)
+  await app.listen(process.env.PORT);
+  console.log(`server start success http://localhost:${process.env.PORT}`)
 }
 bootstrap();

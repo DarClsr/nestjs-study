@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, ValidationPipe, Session, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, ValidationPipe, Session, Query, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, LoginDto, RegisterDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -43,12 +43,9 @@ export class UserController {
   @Get("refresh")
   async refreshToken(@Query("refresh_token") refreshToken:string){
 
-    const {userId}=await this.jwtService.verify(refreshToken);
-    console.log(userId)
-
+    try{
+      const {userId}=await this.jwtService.verify(refreshToken);
     const user=await this.userService.findOne(userId);
-
-
     const access_token = this.jwtService.sign({
       userId: user.id,
       username: user.name,
@@ -65,6 +62,9 @@ export class UserController {
     return {
       access_token,
       refresh_token,
+    }
+    }catch(e){
+      throw new UnauthorizedException("token 已失效，请重新登录")
     }
     
 
@@ -91,7 +91,7 @@ export class UserController {
 
   @Get("done")
   async done(){
-    //  await this.userService.initData2();
+     await this.userService.initData2();
      return "done"
   }
 

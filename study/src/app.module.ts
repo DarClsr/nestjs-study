@@ -17,9 +17,14 @@ import { Permission } from './user/entities/permission.entity';
 import { BbbModule } from './bbb/bbb.module';
 import { RedisModule } from './redis/redis.module';
 import { Role } from './user/entities/role.entity';
+import { ConfigModule } from '@nestjs/config';
+import  { join } from 'path';
 
 @Module({
   imports: [PersonModule, UserModule, AaaModule, 
+    ConfigModule.forRoot({
+      envFilePath: [join(process.cwd(), '.env')]
+    }),
     WinstonModule.forRoot({
       level: 'debug',
       transports: [
@@ -45,15 +50,15 @@ import { Role } from './user/entities/role.entity';
   }),
   TypeOrmModule.forRoot({
     type: "mysql",
-    host: "localhost",
-    port: 3306,
-    username: "root",
-    password: "123456",
-    database: "nestjs_typeorm",
+    host: process.env.DBURI,
+    port: +process.env.DBPORT ,
+    username: process.env.DBUSER,
+    password: process.env.DBPASSWORD,
+    database:process.env.DB,
     synchronize: true,
     logging: true,
     entities: [User,Permission,Role],
-    poolSize: 10,
+    poolSize: 10, 
     connectorPackage: 'mysql2', 
     extra: {
         authPlugin: 'sha256_password',

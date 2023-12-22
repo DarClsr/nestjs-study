@@ -19,6 +19,7 @@ import { RedisModule } from './redis/redis.module';
 import { Role } from './user/entities/role.entity';
 import { ConfigModule } from '@nestjs/config';
 import  { join } from 'path';
+import { MapModule } from './map/map.module';
 
 @Module({
   imports: [PersonModule, UserModule, AaaModule, 
@@ -72,7 +73,8 @@ import  { join } from 'path';
     }
   }),
   BbbModule,
-  RedisModule
+  RedisModule,
+  MapModule
 ],
   controllers: [AppController],
   providers: [

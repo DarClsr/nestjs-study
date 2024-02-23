@@ -1,11 +1,14 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   HttpStatus,
   Inject,
   Logger,
+  Param,
   Query,
   Session,
+  Sse,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,6 +18,9 @@ import {
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger/dist';
+import { exec } from 'child_process';
+import { join } from 'path';
+import { Observable } from 'rxjs';
 import { Aaa } from './aaa.decorator';
 import { AaaGuard } from './aaa.guard';
 import { AaaService } from './aaa/aaa.service';
@@ -23,9 +29,20 @@ import { LoginGuard } from './login.guard_jwt';
 import { MyLogger } from './MyLogger';
 import { PersonService } from './person/person.service';
 import { QuerypageInterceptor } from './querypage.interceptor';
+import { ShortLongMapService } from './short-long-map.service';
 import { UserService } from './user/user.service';
 import { ValidatePipe } from './validate.pipe';
 import { WINSTON_LOGGER_TOKEN } from './winston/winston.module';
+const childProcess = exec('tail -f ./log');
+childProcess.stdout.on('data', (msg) => {
+  console.log({
+    msg
+  }) 
+})
+
+childProcess.on('error', (error) => {
+  console.error(`子进程出错：${error.message}`);
+});
 
 // 控制器
 @Controller()
@@ -36,6 +53,8 @@ export class AppController {
     // @Inject("user") private readonly userService:UserService,
     @Inject(AaaService) private readonly aaa: AaaService,
   ) {}
+  @Inject(ShortLongMapService)
+  private shortLongMapService: ShortLongMapService;
   @Inject(WINSTON_LOGGER_TOKEN)
   private logger;
   // 属性注入服务
@@ -98,8 +117,8 @@ export class AppController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'id 不合法'
-})
+    description: 'id 不合法',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID',
@@ -120,6 +139,7 @@ export class AppController {
     return 'profile';
   }
 
+
   @UseGuards(LoginGuard)
   @Get('login')
   login(): string {
@@ -132,11 +152,68 @@ export class AppController {
     return num;
   }
 
+  @Get('shortUrl')
+  async generateShortUrl(@Query('url') longUrl) {
+    if (!longUrl) {
+      throw new BadRequestException('短链不存在');
+    }
+
+    return this.shortLongMapService.generate(longUrl);
+  }
+
+  // @Sse('stream')
+  // stream() {
+  //   return new Observable((observer) => {
+  //     observer.next({ data: { msg: 'aaa' } });
+
+  //     setTimeout(() => {
+  //       observer.next({ data: { msg: 'bbb' } });
+  //     }, 2000);
+
+  //     setTimeout(() => {
+  //       observer.next({ data: { msg: 'ccc' } });
+  //     }, 5000);
+  //   });
+  // }
+
+  @Sse('stream2')
+  stream2() {
+    console.log({
+      path:join(__dirname,"../src/log")
+      // D:\project\nestjs-study\study\src
+    })
+    //  const child_process=exec("tail -f "+join(__dirname,"../src/log"))
+     const childProcess = exec('tail -f ./log');
+     
+     return new Observable((observer) => {
+      childProcess.stdout.on('data', (msg) => {
+        console.log({
+          msg
+        })
+        observer.next({ data: { msg: msg.toString() }});
+      })
+    });
+  }
+
   @Get('aaaa')
   @Aaa('admin')
   @UseGuards(AaaGuard)
   async getaaa(@Query('num') num) {
     this.logger.log(`get aaaa`);
     return 'aaaa';
+  }
+
+  
+  @Get(':code')
+  async getLongUrl(@Param('code') code) {
+    const longUrl = await this.shortLongMapService.getLongUrl(code);
+    if (!longUrl) {
+      throw new BadRequestException('链接不能为空');
+    }
+
+    return {
+      longUrl,
+      statusCode: 302,
+    };
   }
 }

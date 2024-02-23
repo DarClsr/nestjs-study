@@ -34,3 +34,18 @@ export class LoginDto {
     })
     password:string
 }
+
+
+export class EmailLoginDto {
+    @IsNotEmpty({
+        message:"用户邮箱不能为空",
+    })
+    account:string;
+    @Length(6,6,{
+        message:"验证码必须为6位"
+    })
+    @IsNotEmpty({
+        message:"验证码不能为空"
+    })
+    code:string
+}

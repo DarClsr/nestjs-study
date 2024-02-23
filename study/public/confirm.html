@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <img id="code" />
+
+    <button id="submit">立即登录</button>
+
+    <div>confirm</div>
+
+
+    <script>
+        let uuid = ""
+        const action = document.getElementById("submit")
+        const searchParams = new URL(window.location.href).search?.split("?")[1]?.split("&") ?? [];
+        const params = new URLSearchParams(window.location.search.slice(1));
+
+        const id = params.get('id');
+
+        axios.get("qrcode/scan",{params:{id:id}}).catch(e=>{
+            alert("二维码已过期")
+        })
+
+        action.addEventListener("click", () => {
+            confirm()
+        })
+
+        document.getElementById('cancel').addEventListener('click', () => {
+            axios.get('qrcode/cancel?id=' + id).catch(e => {
+                alert('二维码已过期');
+            });
+        });
+
+        const confirm = async () => {
+            if (!uuid) {
+                return alert("uuid 不能为空")
+            }
+            const { data } = await axios.get('qrcode/confirm', {
+               params:{
+                id
+               }
+            }).catch(e=>{
+                alert("二维码已过期")
+            })
+        }
+    </script>
+</body>
+
+</html>

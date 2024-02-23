@@ -8,8 +8,8 @@ import { UserService } from './user/user.service';
 import { AaaModule } from './aaa/aaa.module';
 import { LogMiddleware } from './log.middleware';
 import { WinstonModule } from './winston/winston.module';
-import { transports,format } from 'winston';
-import  * as chalk  from 'chalk';
+import { transports, format } from 'winston';
+import * as chalk from 'chalk';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
@@ -18,64 +18,71 @@ import { BbbModule } from './bbb/bbb.module';
 import { RedisModule } from './redis/redis.module';
 import { Role } from './user/entities/role.entity';
 import { ConfigModule } from '@nestjs/config';
-import  { join } from 'path';
+import { join } from 'path';
 import { MapModule } from './map/map.module';
+import { EmailService } from './email/email.service';
+import { UniqueCode } from './entities/uniqueCode.entity';
+import { UniqueCodeService } from './unique-code/unique-code.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ShortLongMapService } from './short-long-map.service';
+import { ShortLongMap } from './entities/shortLongMap.entity';
 
 @Module({
-  imports: [PersonModule, UserModule, AaaModule, 
+  imports: [
+    PersonModule,
+    UserModule,
+    AaaModule,
     ConfigModule.forRoot({
-      envFilePath: [join(process.cwd(), '.env')]
+      envFilePath: [join(process.cwd(), '.env')],
     }),
+    ScheduleModule.forRoot(),
     WinstonModule.forRoot({
       level: 'debug',
       transports: [
-          new transports.Console({
-              format: format.combine(
-                  format.colorize(),
-                  format.printf(({context, level, message, time}) => {
-                      const appStr = chalk.green(`[NEST]`);
-                      const contextStr = chalk.yellow(`[${context}]`);
-                      return `${appStr} ${time} ${level} ${contextStr} ${message} `;
-                  })
-              ),
-          }),
-          new transports.File({
-              format: format.combine(
-                  format.timestamp(),
-                  format.json()
-              ),
-              filename: '111.log',
-              dirname: 'log'
-          })
-      ]
-  }),
-  TypeOrmModule.forRoot({
-    type: "mysql",
-    host: process.env.DBURI,
-    port: +process.env.DBPORT ,
-    username: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database:process.env.DB,
-    synchronize: true,
-    logging: true,
-    entities: [User,Permission,Role],
-    poolSize: 10, 
-    connectorPackage: 'mysql2', 
-    extra: {
+        new transports.Console({
+          format: format.combine(
+            format.colorize(),
+            format.printf(({ context, level, message, time }) => {
+              const appStr = chalk.green(`[NEST]`);
+              const contextStr = chalk.yellow(`[${context}]`);
+              return `${appStr} ${time} ${level} ${contextStr} ${message} `;
+            }),
+          ),
+        }),
+        new transports.File({
+          format: format.combine(format.timestamp(), format.json()),
+          filename: '111.log',
+          dirname: 'log',
+        }),
+      ],
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DBURI,
+      port: +process.env.DBPORT,
+      username: process.env.DBUSER,
+      password: process.env.DBPASSWORD,
+      database: process.env.DB,
+      synchronize: true,
+      logging: true,
+      entities: [User, Permission, Role, UniqueCode,ShortLongMap],
+      poolSize: 10,
+      connectorPackage: 'mysql2',
+      extra: {
         authPlugin: 'sha256_password',
-    }
-  }),
-  JwtModule.register({
-    global:true,
-    secret: 'iwan',
-    signOptions: {
-      expiresIn: '3m'
-    }
-  }),
-  BbbModule,
-  RedisModule,
-  MapModule
-],
+      },
+    }),
+    JwtModule.register({
+      global: true,
+      secret: 'iwan',
+      signOptions: {
+        expiresIn: '3m',
+      },
+    }),
+    BbbModule,
+    RedisModule,
+    MapModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
@@ -90,21 +97,22 @@ import { MapModule } from './map/map.module';
     //   useClass: UserService,
     // },
     {
-      provide:"value",
-      useValue:{
-        name:"iwan",
-        age:53,
-        render(){
-          console.log(this.name)
-        }
-      }
-    }
+      provide: 'value',
+      useValue: {
+        name: 'iwan',
+        age: 53,
+        render() {
+          console.log(this.name);
+        },
+      },
+    },
+    EmailService,
+    UniqueCodeService,
+    ShortLongMapService,
   ],
 })
 export class AppModule implements NestModule {
-  configure (customer:MiddlewareConsumer){
-
-    customer.apply(LogMiddleware).forRoutes("profile.json")
-   
+  configure(customer: MiddlewareConsumer) {
+    customer.apply(LogMiddleware).forRoutes('profile.json');
   }
 }

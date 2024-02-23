@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码登录</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+    <img src="" id="code" />
+    <p>
+        状态： <span class="status_text"></span>
+    </p>
+
+    <script>
+        const code = document.getElementById("code");
+        axios.get("/user/qrcode/generate").then((result) => {
+            code.src = result.data.img
+            queryStatus(code.qrcode_id)
+        });
+
+        const queryStatus = async (id) => {
+            const { data } = await axios.get("qrcode/check", {
+                params: id
+            })
+
+            const status = data.status;
+
+            let text = "";
+
+            switch (status) {
+                case "noscan":
+                    text = "未扫码";
+                    break;
+                case "scan-wait-confirm":
+                    text = "已扫码,等待确认...";
+                    break;
+                case "scan-confirm":
+                    text = "已确认";
+                    break;
+                case "scan-cancel":
+                    text = "已取消";
+                    break;
+            }
+
+
+            document.querySelector(".status-text").innerText=text;
+
+            setTimeout(() => {
+                queryStatus(id)
+            }, 5000);
+
+
+        }
+
+    </script>
+</body>
+
+</html>

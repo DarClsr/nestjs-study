@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Permission } from './entities/permission.entity';
 import { PermissionGuard } from 'src/permission.guard';
 import { Role } from './entities/role.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
   imports:[
@@ -13,10 +14,11 @@ import { Role } from './entities/role.entity';
       User,
       Permission,
       Role
-    ])
+    ]),
+    EmailService
   ],
   controllers: [UserController],
-  providers: [UserService,PermissionGuard],
+  providers: [UserService,PermissionGuard,EmailService],
   exports:[UserService,PermissionGuard]
 })
 export class UserModule {}

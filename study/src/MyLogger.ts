@@ -26,9 +26,6 @@ export class MyLogger implements LoggerService {
 
     warn(message: string, context: string) {
         const time = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-
-        dayjs
-
         this.logger.log('info', message, { context, time });
     }
 }
